@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0e0b;
+  --panel: #111712;
+  --panel-2: #172019;
+  --line: #243027;
+  --text: #e6ebe5;
+  --muted: #8d9c8f;
+  --ember: #ff6a2b;
+  --moss: #74c27a;
+  --sky: #5aa9e6;
+  --risk-normal: #74c27a;
+  --risk-watch: #e8c547;
+  --risk-warning: #ff8a2b;
+  --risk-critical: #ff3d3d;
+  --risk-offline: #6b7280;
+  --risk-biogenic: #4fb6a8;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-ember: var(--ember);
+  --color-moss: var(--moss);
+  --color-sky: var(--sky);
+  --color-critical: var(--risk-critical);
+  --color-warning: var(--risk-warning);
+  --color-watch: var(--risk-watch);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.eyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.leaflet-container {
+  background: #0d120e;
+  font-family: var(--font-geist-sans);
+}
+
+.leaflet-tooltip.node-tip {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  font-size: 12px;
+}
+.leaflet-tooltip.node-tip::before {
+  display: none;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
