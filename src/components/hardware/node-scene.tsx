@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useMemo, useRef } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
-import { Html, OrbitControls } from "@react-three/drei";
-import { CatmullRomCurve3, DoubleSide, FrontSide, Group, LatheGeometry, Plane, Vector2, Vector3 } from "three";
+import { OrbitControls } from "@react-three/drei";
+import { CatmullRomCurve3, DoubleSide, FrontSide, Group, LatheGeometry, Object3D, Plane, Vector2, Vector3 } from "three";
 import { PARTS, type HardwarePart } from "@/lib/hardware";
 
 export interface SceneOptions {
@@ -25,6 +25,54 @@ interface Props extends SceneOptions {
 const CUT_PLANE = new Plane(new Vector3(0, 0, -1), 0);
 
 const PartCtx = createContext({ active: false, cutaway: false });
+
+/**
+ * Screen-space labels. Each label is anchored to a point in some object's local space; a
+ * per-frame projector moves plain DOM elements to match. (drei's <Html> mounts a React root
+ * per label, which React 19 warns about when those roots unmount mid-render.)
+ */
+interface Label {
+  key: string;
+  anchor: string;
+  local: [number, number, number];
+}
+
+const SOIL_LAYERS: [number, number, string, string][] = [
+  [0, -0.4, "#3b2a1a", "Litter & duff"],
+  [-0.4, -1.8, "#4a3524", "A horizon"],
+  [-1.8, -4.2, "#6b4e33", "B horizon"],
+];
+const SOIL_DEPTHS: [number, string][] = [
+  [-0.5, "5 cm"],
+  [-1.5, "15 cm"],
+  [-3.0, "30 cm"],
+];
+
+type AnchorMap = Map<string, Object3D>;
+const AnchorCtx = createContext<(key: string, obj: Object3D | null) => void>(() => {});
+
+function Projector({ labels, anchors, elements }: { labels: Label[]; anchors: React.RefObject<AnchorMap>; elements: React.RefObject<Map<string, HTMLElement>> }) {
+  const v = useMemo(() => new Vector3(), []);
+  useFrame(({ camera, size }) => {
+    for (const l of labels) {
+      const el = elements.current.get(l.key);
+      if (!el) continue;
+      const obj = anchors.current.get(l.anchor);
+      if (!obj) {
+        el.style.visibility = "hidden";
+        continue;
+      }
+      v.set(...l.local);
+      obj.localToWorld(v);
+      v.project(camera);
+      const x = ((v.x + 1) / 2) * size.width;
+      const y = ((1 - v.y) / 2) * size.height;
+      el.style.visibility = v.z > 1 ? "hidden" : "visible";
+      el.style.transform = `translate(${x}px, ${y}px)`;
+    }
+  });
+  return null;
+}
 
 const SPIKE_TOP = 0;
 const SPIKE_BOTTOM = -3.1;
@@ -63,6 +111,7 @@ function Mat({
 
 function Part({ part, explode, children, ...p }: { part: HardwarePart; explode: number; children: React.ReactNode } & Omit<Props, keyof SceneOptions> & { cutaway: boolean; labels: boolean }) {
   const ref = useRef<Group>(null);
+  const register = useContext(AnchorCtx);
   const active = p.selected === part.id || p.hovered === part.id;
 
   useFrame((_, dt) => {
@@ -88,21 +137,16 @@ function Part({ part, explode, children, ...p }: { part: HardwarePart; explode: 
 
   return (
     <PartCtx.Provider value={{ active, cutaway: p.cutaway }}>
-      <group ref={ref} onPointerOver={over} onPointerOut={out} onClick={click}>
+      <group
+        ref={(g) => {
+          ref.current = g;
+          register(part.id, g);
+        }}
+        onPointerOver={over}
+        onPointerOut={out}
+        onClick={click}
+      >
         {children}
-        {p.labels && (
-          <Html position={part.label} center zIndexRange={[20, 0]}>
-            <button
-              onClick={() => p.onSelect(p.selected === part.id ? null : part.id)}
-              className={`grid size-5 place-items-center rounded-full border text-[10px] font-semibold transition-colors ${
-                active ? "border-ember bg-ember text-black" : "border-white/40 bg-black/70 text-white hover:border-ember"
-              }`}
-              aria-label={part.name}
-            >
-              {part.n}
-            </button>
-          </Html>
-        )}
       </group>
     </PartCtx.Provider>
   );
@@ -322,49 +366,26 @@ function PartGeometry({ id }: { id: string }) {
   }
 }
 
-function Soil({ labels }: { labels: boolean }) {
+function Soil() {
   // Cross-section block behind the probe's centre plane (z ≤ 0).
-  const layers: [number, number, string, string][] = [
-    [0, -0.4, "#3b2a1a", "Litter & duff"],
-    [-0.4, -1.8, "#4a3524", "A horizon"],
-    [-1.8, -4.2, "#6b4e33", "B horizon"],
-  ];
-  const depths: [number, string][] = [
-    [-0.5, "5 cm"],
-    [-1.5, "15 cm"],
-    [-3.0, "30 cm"],
-  ];
+  const register = useContext(AnchorCtx);
   return (
-    <group>
-      {layers.map(([top, bottom, color, name]) => (
-        <group key={name}>
-          <mesh position={[0, (top + bottom) / 2, -1.25]}>
-            <boxGeometry args={[5, top - bottom, 2.5]} />
-            <meshStandardMaterial color={color} roughness={1} />
-          </mesh>
-          {labels && (
-            <Html position={[2.45, (top + bottom) / 2, 0]} zIndexRange={[10, 0]}>
-              <span className="whitespace-nowrap text-[10px] text-white/60">{name}</span>
-            </Html>
-          )}
-        </group>
+    <group ref={(g) => register("soil", g)}>
+      {SOIL_LAYERS.map(([top, bottom, color, name]) => (
+        <mesh key={name} position={[0, (top + bottom) / 2, -1.25]}>
+          <boxGeometry args={[5, top - bottom, 2.5]} />
+          <meshStandardMaterial color={color} roughness={1} />
+        </mesh>
       ))}
       <mesh position={[0, 0.005, -1.25]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[5, 2.5]} />
         <meshStandardMaterial color="#33461f" roughness={1} />
       </mesh>
-      {depths.map(([y, label]) => (
-        <group key={label}>
-          <mesh position={[-1.3, y, 0.001]}>
-            <planeGeometry args={[1.6, 0.012]} />
-            <meshBasicMaterial color="#ffffff" transparent opacity={0.35} />
-          </mesh>
-          {labels && (
-            <Html position={[-2.15, y, 0]} center zIndexRange={[10, 0]}>
-              <span className="whitespace-nowrap font-mono text-[10px] text-white/70">{label}</span>
-            </Html>
-          )}
-        </group>
+      {SOIL_DEPTHS.map(([y, label]) => (
+        <mesh key={label} position={[-1.3, y, 0.001]}>
+          <planeGeometry args={[1.6, 0.012]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.35} />
+        </mesh>
       ))}
     </group>
   );
@@ -388,42 +409,102 @@ function ModelRig({ explode, children }: { explode: number; children: React.Reac
   );
 }
 
+const PART_LABELS: Label[] = PARTS.map((p) => ({ key: p.id, anchor: p.id, local: p.label }));
+const LAYER_LABELS: Label[] = SOIL_LAYERS.map(([top, bottom, , name]) => ({ key: `layer-${name}`, anchor: "soil", local: [2.45, (top + bottom) / 2, 0] }));
+const DEPTH_LABELS: Label[] = SOIL_DEPTHS.map(([y, name]) => ({ key: `depth-${name}`, anchor: "soil", local: [-2.15, y, 0] }));
+const ALL_LABELS = [...PART_LABELS, ...LAYER_LABELS, ...DEPTH_LABELS];
+
 export default function NodeScene(props: Props) {
-  const { explode, soil, labels, autoRotate } = props;
+  const { explode, soil, labels, autoRotate, selected, hovered, onSelect } = props;
   const showSoil = soil && explode < 0.05;
+  const anchors = useRef<AnchorMap>(new Map());
+  const elements = useRef<Map<string, HTMLElement>>(new Map());
+  const register = useMemo(
+    () => (key: string, obj: Object3D | null) => {
+      if (obj) anchors.current.set(key, obj);
+      else anchors.current.delete(key);
+    },
+    [],
+  );
+  const bindEl = (key: string) => (el: HTMLElement | null) => {
+    if (el) elements.current.set(key, el);
+    else elements.current.delete(key);
+  };
+  // Start hidden at the origin; the projector positions each label on the next frame.
+  const pos = "pointer-events-none absolute left-0 top-0 invisible";
+
   return (
-    <Canvas
-      camera={{ position: [6.5, 1.8, 9.5], fov: 34 }}
-      dpr={[1, 2]}
-      onCreated={({ gl }) => {
-        gl.localClippingEnabled = true;
-      }}
-      onPointerMissed={() => props.onSelect(null)}
-    >
-      <color attach="background" args={["#0d120e"]} />
-      <ambientLight intensity={0.45} />
-      <hemisphereLight args={["#dbe8ff", "#3a2a1a", 0.7]} />
-      <directionalLight position={[5, 8, 6]} intensity={1.8} />
-      <directionalLight position={[-6, 2, -4]} intensity={0.5} color="#ffb38a" />
+    <div className="relative h-full w-full overflow-hidden">
+      <Canvas
+        camera={{ position: [6.5, 1.8, 9.5], fov: 34 }}
+        dpr={[1, 2]}
+        onCreated={({ gl }) => {
+          gl.localClippingEnabled = true;
+        }}
+        onPointerMissed={() => onSelect(null)}
+      >
+        <color attach="background" args={["#0c1f15"]} />
+        <ambientLight intensity={0.45} />
+        <hemisphereLight args={["#dbe8ff", "#3a2a1a", 0.7]} />
+        <directionalLight position={[5, 8, 6]} intensity={1.8} />
+        <directionalLight position={[-6, 2, -4]} intensity={0.5} color="#ffb38a" />
 
-      <ModelRig explode={explode}>
-        {PARTS.map((part) => (
-          <Part key={part.id} part={part} {...props}>
-            <PartGeometry id={part.id} />
-          </Part>
-        ))}
-        {showSoil && <Soil labels={labels} />}
-      </ModelRig>
+        <AnchorCtx.Provider value={register}>
+          <ModelRig explode={explode}>
+            {PARTS.map((part) => (
+              <Part key={part.id} part={part} {...props}>
+                <PartGeometry id={part.id} />
+              </Part>
+            ))}
+            {showSoil && <Soil />}
+          </ModelRig>
+        </AnchorCtx.Provider>
 
-      <OrbitControls
-        target={[0, -0.6, 0]}
-        enablePan={false}
-        minDistance={4}
-        maxDistance={20}
-        autoRotate={autoRotate}
-        autoRotateSpeed={0.7}
-        makeDefault
-      />
-    </Canvas>
+        {labels && <Projector labels={ALL_LABELS} anchors={anchors} elements={elements} />}
+
+        <OrbitControls
+          target={[0, -0.6, 0]}
+          enablePan={false}
+          minDistance={4}
+          maxDistance={20}
+          autoRotate={autoRotate}
+          autoRotateSpeed={0.7}
+          makeDefault
+        />
+      </Canvas>
+
+      {labels && (
+        <div className="pointer-events-none absolute inset-0">
+          {PARTS.map((part) => {
+            const active = selected === part.id || hovered === part.id;
+            return (
+              <div key={part.id} ref={bindEl(part.id)} className={pos}>
+                <button
+                  onClick={() => onSelect(selected === part.id ? null : part.id)}
+                  className={`pointer-events-auto grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-[10px] font-semibold transition-colors ${
+                    active ? "border-ember bg-ember text-black" : "border-white/40 bg-black/70 text-white hover:border-ember"
+                  }`}
+                  aria-label={part.name}
+                >
+                  {part.n}
+                </button>
+              </div>
+            );
+          })}
+          {showSoil &&
+            LAYER_LABELS.map((l) => (
+              <div key={l.key} ref={bindEl(l.key)} className={pos}>
+                <span className="block -translate-y-1/2 whitespace-nowrap text-[10px] text-white/60">{l.key.slice(6)}</span>
+              </div>
+            ))}
+          {showSoil &&
+            DEPTH_LABELS.map((l) => (
+              <div key={l.key} ref={bindEl(l.key)} className={pos}>
+                <span className="block -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[10px] text-white/70">{l.key.slice(6)}</span>
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
   );
 }

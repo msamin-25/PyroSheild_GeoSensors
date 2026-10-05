@@ -35,7 +35,10 @@ export default function Home() {
       <section className="relative overflow-hidden border-b border-line">
         <div
           className="pointer-events-none absolute inset-0 opacity-60"
-          style={{ background: "radial-gradient(60% 60% at 75% 30%, rgba(255,106,43,0.18), transparent 70%)" }}
+          style={{
+            background:
+              "radial-gradient(55% 60% at 80% 25%, rgba(127,208,138,0.16), transparent 70%), radial-gradient(40% 45% at 65% 75%, rgba(255,106,43,0.10), transparent 70%)",
+          }}
         />
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:py-28">
           <div className="eyebrow">Environmental defense · Deep-tech hardware</div>

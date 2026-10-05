@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0a0e0b;
-  --panel: #111712;
-  --panel-2: #172019;
-  --line: #243027;
-  --text: #e6ebe5;
-  --muted: #8d9c8f;
+  --bg: #0a1a11;
+  --panel: #0f251a;
+  --panel-2: #153223;
+  --line: #234a33;
+  --text: #e7f2e9;
+  --muted: #94b39d;
   --ember: #ff6a2b;
-  --moss: #74c27a;
+  --moss: #7fd08a;
   --sky: #5aa9e6;
   --risk-normal: #74c27a;
   --risk-watch: #e8c547;
@@ -55,11 +55,11 @@ body {
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ember);
+  color: var(--moss);
 }
 
 .leaflet-container {
-  background: #0d120e;
+  background: #0c1f15;
   font-family: var(--font-geist-sans);
 }
 

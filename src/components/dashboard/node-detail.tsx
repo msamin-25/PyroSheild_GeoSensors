@@ -17,9 +17,9 @@ const tick = (t: string) => new Date(t).toLocaleTimeString("en-CA", { timeZone: 
 const full = (t: unknown) =>
   new Date(String(t)).toLocaleString("en-CA", { timeZone: TZ, month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
 
-const axis = { stroke: "#5d6b60", fontSize: 11, tickLine: false } as const;
+const axis = { stroke: "#5f8a6c", fontSize: 11, tickLine: false } as const;
 const tooltipStyle = {
-  contentStyle: { background: "#172019", border: "1px solid #243027", borderRadius: 8, fontSize: 12 },
+  contentStyle: { background: "#153223", border: "1px solid #234a33", borderRadius: 8, fontSize: 12 },
   labelFormatter: full,
 };
 
@@ -80,7 +80,7 @@ export function NodeDetail({ id, refreshKey, onClose, onSelect }: { id: string; 
 
           <ChartCard title="Soil & air temperature (°C)">
             <LineChart data={d.series} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
-              <CartesianGrid stroke="#1d271f" vertical={false} />
+              <CartesianGrid stroke="#1a3a27" vertical={false} />
               <XAxis dataKey="t" tickFormatter={tick} minTickGap={40} {...axis} />
               <YAxis {...axis} />
               <Tooltip {...tooltipStyle} />
@@ -94,7 +94,7 @@ export function NodeDetail({ id, refreshKey, onClose, onSelect }: { id: string; 
 
           <ChartCard title="Combustion gases">
             <LineChart data={d.series} margin={{ top: 4, right: -10, left: -18, bottom: 0 }}>
-              <CartesianGrid stroke="#1d271f" vertical={false} />
+              <CartesianGrid stroke="#1a3a27" vertical={false} />
               <XAxis dataKey="t" tickFormatter={tick} minTickGap={40} {...axis} />
               <YAxis yAxisId="co" {...axis} />
               <YAxis yAxisId="voc" orientation="right" {...axis} />
@@ -107,7 +107,7 @@ export function NodeDetail({ id, refreshKey, onClose, onSelect }: { id: string; 
 
           <ChartCard title="Thermoelectric harvest (µW)">
             <AreaChart data={d.series} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
-              <CartesianGrid stroke="#1d271f" vertical={false} />
+              <CartesianGrid stroke="#1a3a27" vertical={false} />
               <XAxis dataKey="t" tickFormatter={tick} minTickGap={40} {...axis} />
               <YAxis {...axis} />
               <Tooltip {...tooltipStyle} />
@@ -147,7 +147,7 @@ function Assessment({ detail }: { detail: Detail }) {
       <div className="flex items-center gap-4">
         <div className="relative grid size-16 shrink-0 place-items-center">
           <svg viewBox="0 0 36 36" className="absolute inset-0 -rotate-90">
-            <circle cx="18" cy="18" r="15.5" fill="none" stroke="#243027" strokeWidth="3" />
+            <circle cx="18" cy="18" r="15.5" fill="none" stroke="#234a33" strokeWidth="3" />
             <circle cx="18" cy="18" r="15.5" fill="none" stroke={color} strokeWidth="3" strokeDasharray={`${a.score * 0.974} 100`} strokeLinecap="round" />
           </svg>
           <span className="font-mono text-lg font-semibold">{a.score}</span>
