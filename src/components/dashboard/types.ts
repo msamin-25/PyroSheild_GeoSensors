@@ -27,3 +27,12 @@ export interface AlertsResponse {
   generatedAt: string;
   alerts: Alert[];
 }
+
+export type BaseLayer = "dark" | "terrain" | "satellite";
+export type NodeFilter = "all" | "risk" | "offline";
+
+export function matchesFilter(n: NodeRow, f: NodeFilter) {
+  if (f === "risk") return n.level !== "normal" || n.classification === "plume" || n.classification === "biogenic";
+  if (f === "offline") return !n.online;
+  return true;
+}

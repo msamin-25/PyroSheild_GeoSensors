@@ -99,8 +99,8 @@ function Mat({
       color={color}
       metalness={metalness}
       roughness={roughness}
-      emissive={active ? "#ff6a2b" : "#000000"}
-      emissiveIntensity={active ? 0.55 : 0}
+      emissive={active ? "#7ee08f" : "#000000"}
+      emissiveIntensity={active ? 0.45 : 0}
       clippingPlanes={shell && cutaway ? [CUT_PLANE] : []}
       side={shell ? DoubleSide : FrontSide}
       transparent={opacity !== undefined}
@@ -443,7 +443,6 @@ export default function NodeScene(props: Props) {
         }}
         onPointerMissed={() => onSelect(null)}
       >
-        <color attach="background" args={["#0c1f15"]} />
         <ambientLight intensity={0.45} />
         <hemisphereLight args={["#dbe8ff", "#3a2a1a", 0.7]} />
         <directionalLight position={[5, 8, 6]} intensity={1.8} />
@@ -481,8 +480,8 @@ export default function NodeScene(props: Props) {
               <div key={part.id} ref={bindEl(part.id)} className={pos}>
                 <button
                   onClick={() => onSelect(selected === part.id ? null : part.id)}
-                  className={`pointer-events-auto grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border text-[10px] font-semibold transition-colors ${
-                    active ? "border-ember bg-ember text-black" : "border-white/40 bg-black/70 text-white hover:border-ember"
+                  className={`pointer-events-auto grid size-[22px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border font-mono text-[10px] font-semibold transition-all ${
+                    active ? "scale-110 border-brand bg-brand text-on-brand shadow-[0_0_0_4px_rgba(126,224,143,0.25)]" : "border-white/30 bg-bg/80 text-fg backdrop-blur hover:border-brand"
                   }`}
                   aria-label={part.name}
                 >

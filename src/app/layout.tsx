@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SiteNav } from "@/components/site-nav";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -12,12 +12,21 @@ export const metadata: Metadata = {
     "Self-powered, biodegradable soil sensor nodes that detect subterranean smoldering hours before wildfires break through the canopy.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#06120c",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
-        <SiteNav />
-        <main className="flex-1 flex flex-col">{children}</main>
+      <body className="flex min-h-full flex-col font-sans">
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[2000] focus:rounded-md focus:bg-brand focus:px-3 focus:py-2 focus:text-on-brand">
+          Skip to content
+        </a>
+        <SiteHeader />
+        <main id="main" className="flex flex-1 flex-col">
+          {children}
+        </main>
       </body>
     </html>
   );

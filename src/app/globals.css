@@ -1,83 +1,295 @@
 @import "tailwindcss";
 
+/* ───────────────────────────── Design tokens ─────────────────────────────
+   Forest-night palette. Green is the brand; ember/red are reserved for fire
+   and risk so that colour always carries meaning in the operations UI.     */
 :root {
-  --bg: #0a1a11;
-  --panel: #0f251a;
-  --panel-2: #153223;
-  --line: #234a33;
-  --text: #e7f2e9;
-  --muted: #94b39d;
-  --ember: #ff6a2b;
-  --moss: #7fd08a;
-  --sky: #5aa9e6;
-  --risk-normal: #74c27a;
-  --risk-watch: #e8c547;
-  --risk-warning: #ff8a2b;
-  --risk-critical: #ff3d3d;
-  --risk-offline: #6b7280;
-  --risk-biogenic: #4fb6a8;
+  /* Surfaces, darkest → lightest */
+  --bg: #06120c;
+  --surface: #0b1c13;
+  --surface-2: #10261a;
+  --surface-3: #163222;
+  --overlay: rgba(6, 18, 12, 0.78);
+
+  /* Lines */
+  --border: rgba(170, 230, 190, 0.09);
+  --border-strong: rgba(170, 230, 190, 0.18);
+
+  /* Text */
+  --fg: #eef6f0;
+  --fg-2: #a8c1b0;
+  --fg-3: #6e8c78;
+
+  /* Brand */
+  --brand: #7ee08f;
+  --brand-strong: #a4f0ad;
+  --brand-soft: rgba(126, 224, 143, 0.12);
+  --on-brand: #04140a;
+
+  /* Semantic */
+  --fire: #ff6b35;
+  --fire-soft: rgba(255, 107, 53, 0.12);
+  --info: #6cb8f0;
+  --risk-normal: #6fcf7f;
+  --risk-watch: #e9c46a;
+  --risk-warning: #ff8c42;
+  --risk-critical: #ff4d4d;
+  --risk-offline: #6b7c72;
+  --risk-biogenic: #4fbfae;
+
+  /* Effects */
+  --ring: 0 0 0 2px var(--bg), 0 0 0 4px rgba(126, 224, 143, 0.55);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 24px 64px -16px rgba(0, 0, 0, 0.7);
+  --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-panel-2: var(--panel-2);
-  --color-line: var(--line);
-  --color-text: var(--text);
-  --color-muted: var(--muted);
-  --color-ember: var(--ember);
-  --color-moss: var(--moss);
-  --color-sky: var(--sky);
-  --color-critical: var(--risk-critical);
-  --color-warning: var(--risk-warning);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-overlay: var(--overlay);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-fire: var(--fire);
+  --color-fire-soft: var(--fire-soft);
+  --color-info: var(--info);
+  --color-ok: var(--risk-normal);
   --color-watch: var(--risk-watch);
+  --color-warning: var(--risk-warning);
+  --color-critical: var(--risk-critical);
+  --color-offline: var(--risk-offline);
+  --color-biogenic: var(--risk-biogenic);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
 }
 
+/* ───────────────────────────── Base ───────────────────────────── */
 html {
   color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
 }
 
 body {
   background: var(--bg);
-  color: var(--text);
+  color: var(--fg);
+  font-feature-settings: "ss01", "cv11";
+  text-rendering: optimizeLegibility;
 }
 
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+::selection {
+  background: rgba(126, 224, 143, 0.28);
+  color: var(--fg);
 }
 
-.eyebrow {
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: 6px;
+}
+
+/* Data is always tabular so columns of numbers don't jitter on refresh. */
+.font-mono,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────────────────────────── Primitives ───────────────────────────── */
+@utility surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--highlight);
+}
+
+@utility surface-raised {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--highlight), var(--shadow-md);
+}
+
+@utility eyebrow {
   font-family: var(--font-geist-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--moss);
+  color: var(--brand);
 }
 
+@utility text-display {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+@utility text-title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+@utility hairline-grid {
+  background-image:
+    linear-gradient(to right, rgba(170, 230, 190, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(170, 230, 190, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+
+/* ───────────────────────────── Map ───────────────────────────── */
 .leaflet-container {
-  background: #0c1f15;
+  background: #0a1a12;
   font-family: var(--font-geist-sans);
 }
 
+.leaflet-control-attribution {
+  background: rgba(6, 18, 12, 0.7) !important;
+  color: var(--fg-3) !important;
+  font-size: 10px !important;
+  border-top-left-radius: 6px;
+}
+.leaflet-control-attribution a {
+  color: var(--fg-2) !important;
+}
+
 .leaflet-tooltip.node-tip {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  box-shadow: none;
+  background: var(--surface-2);
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  padding: 8px 10px;
   font-size: 12px;
 }
 .leaflet-tooltip.node-tip::before {
   display: none;
 }
 
+/* ───────────────────────────── Motion ───────────────────────────── */
 @keyframes pulse-ring {
-  0% { transform: scale(0.6); opacity: 0.9; }
-  100% { transform: scale(2.4); opacity: 0; }
+  0% { transform: scale(0.55); opacity: 0.95; }
+  100% { transform: scale(2.6); opacity: 0; }
 }
 .pulse-ring {
-  animation: pulse-ring 1.6s ease-out infinite;
+  animation: pulse-ring 1.8s var(--ease-out) infinite;
+}
+
+@keyframes rise {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { transform: translateY(-46px); opacity: 0; }
+}
+.anim-rise {
+  animation: rise 3.2s ease-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.anim-glow {
+  animation: glow 2.6s ease-in-out infinite;
+}
+
+@keyframes dash {
+  to { stroke-dashoffset: -24; }
+}
+.anim-dash {
+  animation: dash 1.2s linear infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.anim-fade-up {
+  animation: fade-up 0.35s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ───────────────────────────── Range input ───────────────────────────── */
+input[type="range"].range {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--surface-3);
+}
+input[type="range"].range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--fg);
+  border: 3px solid var(--brand);
+  box-shadow: 0 0 0 4px rgba(126, 224, 143, 0.15), var(--shadow-sm);
+  cursor: grab;
+  transition: transform 0.15s var(--ease-out);
+}
+input[type="range"].range::-webkit-slider-thumb:active {
+  transform: scale(1.12);
+  cursor: grabbing;
+}
+input[type="range"].range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--fg);
+  border: 3px solid var(--brand);
+  cursor: grab;
 }
