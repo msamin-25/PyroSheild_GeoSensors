@@ -1,6 +1,6 @@
 /**
  * PyroShield G1 "Geo-Spike" reference design.
- * Model units: 1 unit = 10 cm. y = 0 is the soil surface.
+ * Model units: 1 unit = 10 cm. y = 0 is the soil surface
  */
 
 export interface HardwarePart {
