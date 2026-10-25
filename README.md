@@ -74,4 +74,4 @@ Levels are watch ≥ 30, warning ≥ 55 and critical ≥ 80. The weights are han
   "soil30C": 10.6, "coPpm": 0.4, "vocPpb": 45, "soilMoisturePct": 18, "harvestUw": 120, "supercapV": 2.71 }, "…≥16 samples"] }
 ```
 
-It validates the packet and returns the assessment, but it does not store anything yet. Going to production means adding a time-series store (for example Postgres with TimescaleDB), persisting packets in `ingest`, and reading `getSeries` from that store instead of `sim.ts`.
+It validates the packet and returns the assessment, but it does not store anything yet. Going to production means adding a time-series store, persisting packets in `ingest`, and reading `getSeries` from that store instead of `sim.ts`.
