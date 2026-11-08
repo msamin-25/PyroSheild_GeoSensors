@@ -63,7 +63,7 @@ Two rules catch false positives:
 - **Biogenic gate**: gas without heat (decomposition) is capped below the alert threshold.
 - **Plume**: gas without local heat but with a heating neighbour is classed as drift.
 
-Levels are watch ≥ 30, warning ≥ 55 and critical ≥ 80. The weights are hand-tuned placeholders until field burn-trial data is available to train them.
+Levels are watch ≥ 30, warning ≥ 55 and critical ≥ 80. The weights are hand-tuned placeholders until field burn-trial data is available to train them in an organized way.
 
 ### Connecting real hardware
 
